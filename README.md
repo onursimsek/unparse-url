@@ -1,7 +1,7 @@
 # Unparse Url
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/onursimsek/unparse-url.svg?style=flat-square)](https://packagist.org/packages/onursimsek/unparse-url)
-[![Total Downloads](https://img.shields.io/packagist/dt/spatie/laravel-activitylog.svg?style=flat-square)](https://packagist.org/packages/onursimsek/unparse-url)
+[![Total Downloads](https://img.shields.io/packagist/dt/onursimsek/unparse-url.svg?style=flat-square)](https://packagist.org/packages/onursimsek/unparse-url)
 
 This package reverses `parse_url()` result
 
