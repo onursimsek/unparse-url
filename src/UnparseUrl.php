@@ -2,21 +2,11 @@
 
 namespace UnparseUrl;
 
+use UnparseUrl\Enums\Glues;
+
 class UnparseUrl
 {
-    const SCHEME_GLUE = ':';
-
-    const HOST_GLUE = '//';
-
-    const AUTHORITY_GLUE = '@';
-
-    const PORT_GLUE = ':';
-
-    const QUERY_GLUE = '?';
-
-    const FRAGMENT_GLUE = '#';
-
-    const DEFAULTS = [
+    private const DEFAULTS = [
         'scheme' => null,
         'user' => null,
         'pass' => null,
@@ -27,19 +17,10 @@ class UnparseUrl
         'fragment' => null,
     ];
 
-    /**
-     * @var array
-     */
-    private $parsedUrl;
+    private array $defaults;
 
-    /**
-     * @var array
-     */
-    private $defaults;
-
-    public function __construct(array $parsedUrl, array $defaults = [])
+    public function __construct(private readonly array $parsedUrl, array $defaults = [])
     {
-        $this->parsedUrl = $parsedUrl;
         $this->defaults = $defaults;
     }
 
@@ -60,27 +41,30 @@ class UnparseUrl
     {
         [$scheme, $user, $pass, $host, $port, $path, $query, $fragment] = array_values($values);
 
-        switch (true) {
-            case $scheme && $host:
-                $schemeGlue = self::SCHEME_GLUE . self::HOST_GLUE;
-                break;
-            case !$scheme && $host:
-                $schemeGlue = self::HOST_GLUE;
-                break;
-            default:
-                $schemeGlue = self::SCHEME_GLUE;
-                break;
-        }
+        $schemeGlue = match (true) {
+            $scheme && $host => Glues::SemiColon->value . Glues::Host->value,
+            !$scheme && $host => Glues::Host->value,
+            default => Glues::SemiColon->value,
+        };
 
-        return $scheme . $schemeGlue
-            . $user
-            . ($pass ? ':' . $pass : null)
-            . ($user || $pass ? self::AUTHORITY_GLUE : null)
-            . $host
-            . ($port ? self::PORT_GLUE . $port : null)
-            . $path
-            . ($query ? self::QUERY_GLUE . $query : null)
-            . ($fragment ? self::FRAGMENT_GLUE . $fragment : null);
+        return sprintf(
+            '%1$s%2$s%3$s%4$s%5$s%6$s%7$s%8$s%9$s%10$s',
+            $scheme,
+            $schemeGlue,
+            $user,
+            $this->prependGlue($pass, Glues::SemiColon),
+            $user || $pass ? Glues::Authority->value : null,
+            $host,
+            $this->prependGlue($port, Glues::SemiColon),
+            $path,
+            $this->prependGlue($query, Glues::Query),
+            $this->prependGlue($fragment, Glues::Fragment)
+        );
+    }
+
+    private function prependGlue(?string $component, Glues $glue): ?string
+    {
+        return $component ? $glue->value . $component : null;
     }
 
     /**
